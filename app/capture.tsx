@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { CameraService } from '../src/services/CameraService';
+import { useAuth } from '../src/services/context/AuthContext';
+import { PermissionsService } from '../src/services/PermissionsService';
+import { useRouter } from 'expo-router';
 
 export default function CaptureScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -11,6 +14,9 @@ export default function CaptureScreen() {
   const [isCapturing, setIsCapturing] = useState(false);
   const cameraRef = useRef<CameraView | null>(null);
   const [facing, setFacing] = useState<'back' | 'front'>('back');
+  const { user, loading } = useAuth();
+  const [allowed, setAllowed] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -25,6 +31,10 @@ export default function CaptureScreen() {
     if (startedAt === null) setStartedAt(Date.now());
     return () => clearInterval(t);
   }, [startedAt]);
+
+  useEffect(() => {
+    PermissionsService.can('capture', user).then(setAllowed);
+  }, [user]);
 
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -43,10 +53,29 @@ export default function CaptureScreen() {
       const front = await cam.takePictureAsync({ base64: true, quality: 0.9 });
       await CameraService.savePair(back.base64, front.base64, lateSeconds);
       setCompleted(true);
+      // Navigate back to timeline so it refreshes via focus effect
+      setTimeout(() => router.replace('/'), 500);
     } finally {
       setIsCapturing(false);
     }
   };
+
+  if (!loading && !user) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text>Please log in</Text>
+        <TouchableOpacity onPress={() => router.replace('/login')} style={{ marginTop: 12 }}><Text style={{ color: '#007aff' }}>Go to Login</Text></TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (!allowed) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <Text>You do not have permission to capture.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, padding: 12 }}>

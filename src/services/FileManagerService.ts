@@ -1,4 +1,5 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import { AuthService } from './AuthService';
 
 export type CameraFacing = 'front' | 'back';
 
@@ -12,11 +13,20 @@ export interface SavedPhotoMeta {
 }
 
 export class FileManagerService {
-  static photosDir = `${FileSystem.documentDirectory}BeReal/photos/`;
-  static allPhotosDir = `${FileSystem.documentDirectory}BeReal/all_photos/`;
+  static baseDir = `${FileSystem.documentDirectory}BeReal/`;
+  static photosDir = `${FileManagerService.baseDir}photos/`;
+  static allPhotosDir = `${FileManagerService.baseDir}all_photos/`;
+  static usersRoot = `${FileManagerService.baseDir}users/`;
 
   static async ensureDirs(): Promise<void> {
-    for (const dir of [this.photosDir, this.allPhotosDir]) {
+    const current = AuthService.getCurrentUserSync();
+    const userScoped = current ? `${this.usersRoot}${current.id}/` : null;
+    const photosDir = userScoped ? `${userScoped}photos/` : this.photosDir;
+    const allPhotosDir = userScoped ? `${userScoped}all_photos/` : this.allPhotosDir;
+    // Assign effective dirs for downstream usage
+    (this as any).effectivePhotosDir = photosDir;
+    (this as any).effectiveAllPhotosDir = allPhotosDir;
+    for (const dir of [this.baseDir, this.usersRoot, photosDir, allPhotosDir]) {
       const info = await FileSystem.getInfoAsync(dir);
       if (!info.exists) {
         await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
@@ -41,17 +51,19 @@ export class FileManagerService {
   static async saveJpeg(base64: string, date: Date, camera: CameraFacing, isLateSeconds: number | 0, base?: { dateKey: string; timeKey: string }): Promise<SavedPhotoMeta> {
     await this.ensureDirs();
     const { filename, dateKey, timeKey, status } = this.buildFilenames(date, camera, isLateSeconds, base);
-    const dest = `${this.allPhotosDir}${filename}`;
+    const effectiveAllPhotosDir = (this as any).effectiveAllPhotosDir || this.allPhotosDir;
+    const dest = `${effectiveAllPhotosDir}${filename}`;
     await FileSystem.writeAsStringAsync(dest, base64, { encoding: FileSystem.EncodingType.Base64 });
     return { uri: dest, filename, dateKey, timeKey, camera, status: status as SavedPhotoMeta['status'] };
   }
 
   static async listAll(limit: number, offset: number): Promise<FileSystem.FileInfo[]> {
     await this.ensureDirs();
-    const files = await FileSystem.readDirectoryAsync(this.allPhotosDir);
+    const effectiveAllPhotosDir = (this as any).effectiveAllPhotosDir || this.allPhotosDir;
+    const files = await FileSystem.readDirectoryAsync(effectiveAllPhotosDir);
     const jpgs = files.filter((f) => f.endsWith('.jpg')).sort((a, b) => (a < b ? 1 : -1));
     const slice = jpgs.slice(offset, offset + limit);
-    const infos = await Promise.all(slice.map((name) => FileSystem.getInfoAsync(`${this.allPhotosDir}${name}`)));
+    const infos = await Promise.all(slice.map((name) => FileSystem.getInfoAsync(`${effectiveAllPhotosDir}${name}`)));
     return infos as any;
   }
 }
