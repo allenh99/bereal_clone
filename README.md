@@ -1,3 +1,5 @@
+##Built as a project for CS4501
+
 # BeReal One (Multi-User)
 
 A lightweight, local-only BeReal-style app built with Expo + React Native. It supports multiple users on the same device, profiles, permissions, two-step capture (front then back), emoji reactions, and an aggregated timeline (All/Mine).
