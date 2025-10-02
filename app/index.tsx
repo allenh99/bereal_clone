@@ -7,6 +7,7 @@ import { useAuth } from '../src/services/context/AuthContext';
 import { PermissionsService } from '../src/services/PermissionsService';
 import { useFocusEffect } from '@react-navigation/native';
 import { RefreshControl } from 'react-native';
+import { ReactionsService, Emoji } from '../src/services/ReactionsService';
 
 export default function TimelineScreen() {
   const router = useRouter();
@@ -35,6 +36,8 @@ export default function TimelineScreen() {
       // Reload when returning to timeline (e.g., after capture)
       TimelineService.reset();
       TimelineService.loadNextPage().then(() => setPosts(TimelineService.groupedPosts()));
+      // Also refresh reactions for current items
+      setTimeout(() => loadReactionsForPosts(TimelineService.groupedPosts()), 0);
       return () => {};
     }, [user])
   );
@@ -42,6 +45,21 @@ export default function TimelineScreen() {
   const loadMore = () => {
     TimelineService.loadNextPage().then(() => setPosts(TimelineService.groupedPosts()));
   };
+
+  const [reactionState, setReactionState] = React.useState<Record<string, { counts: Record<Emoji, number>; mine: Emoji | null }>>({});
+
+  const loadReactionsForPosts = async (items: ReturnType<typeof TimelineService.groupedPosts>) => {
+    if (!user) return;
+    const updates: Record<string, { counts: Record<Emoji, number>; mine: Emoji | null }> = {};
+    for (const p of items) {
+      updates[p.key] = await ReactionsService.getSummary(p.key, user.id);
+    }
+    setReactionState((prev) => ({ ...prev, ...updates }));
+  };
+
+  useEffect(() => {
+    loadReactionsForPosts(posts);
+  }, [posts, user]);
 
   if (!loading && !user) {
     return (
@@ -97,6 +115,28 @@ export default function TimelineScreen() {
               )}
             </View>
             <Text style={{ marginTop: 6, color: '#666' }}>{item.statusLabel}</Text>
+            {user && (
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                {ReactionsService.defaultEmojis().map((e) => {
+                  const summary = reactionState[item.key];
+                  const isMine = summary?.mine === e;
+                  const count = summary?.counts?.[e] || 0;
+                  return (
+                    <TouchableOpacity
+                      key={e}
+                      onPress={async () => {
+                        await ReactionsService.toggle(item.key, user.id, e);
+                        const updated = await ReactionsService.getSummary(item.key, user.id);
+                        setReactionState((prev) => ({ ...prev, [item.key]: updated }));
+                      }}
+                      style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 16, backgroundColor: isMine ? '#eef' : '#f2f2f2' }}
+                    >
+                      <Text>{e} {count > 0 ? count : ''}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
           </View>
         )}
       />
