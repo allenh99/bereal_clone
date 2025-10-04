@@ -1,6 +1,6 @@
-##Built as a project for CS4501
+# BeReal Clone
 
-# BeReal One (Multi-User)
+## Built as a project for CS4501*
 
 A lightweight, local-only BeReal-style app built with Expo + React Native. It supports multiple users on the same device, profiles, permissions, two-step capture (front then back), emoji reactions, and an aggregated timeline (All/Mine).
 
@@ -71,5 +71,6 @@ Note: All data is stored locally via Expo FileSystem. There is no backend or clo
 
 ## Security note
 This is a local demo app. Passwords are hashed with a per-user salt, but there is no server, transport security, or remote auth. Do not use in production as-is.
+
 
 
