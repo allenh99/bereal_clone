@@ -1,8 +1,9 @@
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react-native';
+import { act, screen, waitFor } from '@testing-library/react-native';
 import TimelineScreen from '../../app/index';
 import { fixtures } from '../../src/test-utils/fixtures';
 import * as Notifications from 'expo-notifications';
+import { render } from '../../src/test-utils/render';
 
 describe('TimelineScreen rendering states', () => {
 	beforeEach(async () => {

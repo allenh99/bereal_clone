@@ -1,9 +1,10 @@
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import CaptureScreen from '../../app/capture';
 import { fixtures } from '../../src/test-utils/fixtures';
 import { __queuePicture, __resetCameraMock } from '../../__mocks__/expo-camera';
 import * as FS from '../../__mocks__/expo-file-system';
+import { render } from '../../src/test-utils/render';
 
 describe('Capture flow', () => {
 	beforeEach(async () => {

@@ -1,9 +1,10 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import LoginScreen from '../../app/login';
 import SignupScreen from '../../app/signup';
 import ProfileScreen from '../../app/profile';
 import { fixtures } from '../../src/test-utils/fixtures';
+import { render } from '../../src/test-utils/render';
 
 describe('Authentication flow', () => {
 	beforeEach(async () => {
