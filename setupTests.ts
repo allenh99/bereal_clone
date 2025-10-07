@@ -4,6 +4,7 @@ import 'react-native-gesture-handler/jestSetup';
 jest.mock('expo-file-system/legacy', () => require('./__mocks__/expo-file-system'));
 jest.mock('expo-crypto', () => require('./__mocks__/expo-crypto'));
 jest.mock('expo-notifications', () => require('./__mocks__/expo-notifications'));
+jest.mock('expo-camera', () => require('./__mocks__/expo-camera'));
 
 // Router mocks for screens
 jest.mock('expo-router', () => ({
