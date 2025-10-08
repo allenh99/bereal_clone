@@ -1,30 +1,45 @@
-import React, { forwardRef, useImperativeHandle } from 'react';
-import { View } from 'react-native';
+const React = require('react');
+const { forwardRef, useImperativeHandle } = React;
+const { View } = require('react-native');
 
-const pictureQueue: string[] = [];
-const requestPermissionMock = jest.fn(async () => ({ granted: true }));
+const pictureQueue = [] as any[];
+const __requestPermissionMock = jest.fn(async () => ({ granted: true }));
 
-export function __queuePicture(base64: string) {
-	pictureQueue.push(base64);
+function __queuePicture(base64: string) {
+	pictureQueue.push({ ok: base64 });
 }
 
-export function __resetCameraMock() {
-	requestPermissionMock.mockClear();
+function __queuePictureError(message = 'capture failed') {
+	pictureQueue.push({ error: new Error(message) });
+}
+
+function __resetCameraMock() {
+	__requestPermissionMock.mockClear();
 	pictureQueue.length = 0;
 }
 
-export const CameraView = forwardRef<any, any>((props, ref) => {
+const CameraView = forwardRef((props: any, ref: any) => {
 	useImperativeHandle(ref, () => ({
 		takePictureAsync: async (_opts?: any) => {
-			const base64 = pictureQueue.shift() ?? 'BASE64DATA';
-			return { base64 };
+			const next: any = pictureQueue.shift() || { ok: 'BASE64DATA' };
+			if (next && next.error) throw next.error;
+			return { base64: next.ok };
 		},
 	}));
-	return <View testID="camera-view" style={props.style} />;
+	return React.createElement(View, { testID: 'camera-view', style: (props || {}).style });
 });
 
-export function useCameraPermissions() {
-	return [{ granted: true }, requestPermissionMock] as const;
+function useCameraPermissions() {
+	return [{ granted: true }, __requestPermissionMock];
 }
+
+module.exports = {
+	CameraView,
+	useCameraPermissions,
+	__requestPermissionMock,
+	__queuePicture,
+	__queuePictureError,
+	__resetCameraMock,
+};
 
 

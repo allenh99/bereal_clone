@@ -12,10 +12,12 @@ describe('Authentication flow', () => {
 		await fixtures.empty();
 	});
 
-	it('signup creates account and navigates to profile (state available)', async () => {
-		render(<SignupScreen />);
-		fireEvent.changeText(screen.getByPlaceholderText('Email'), 'a@x.com');
-		fireEvent.changeText(screen.getByPlaceholderText('Password'), 'pw');
+it('signup creates account and navigates to profile (state available)', async () => {
+	// give providers a moment to mount
+	await waitFor(() => true);
+	render(<SignupScreen />);
+	fireEvent.changeText(await screen.findByPlaceholderText('Email'), 'a@x.com');
+	fireEvent.changeText(await screen.findByPlaceholderText('Password'), 'pw');
 		fireEvent.press(screen.getByText(/Create account/i));
 		// Render profile to see if user exists
 		render(<ProfileScreen />);
@@ -23,9 +25,9 @@ describe('Authentication flow', () => {
 	});
 
 	it('login fails with invalid credentials', async () => {
-		render(<LoginScreen />);
-		fireEvent.changeText(screen.getByPlaceholderText('Email'), 'not@exists.com');
-		fireEvent.changeText(screen.getByPlaceholderText('Password'), 'pw');
+	render(<LoginScreen />);
+	fireEvent.changeText(await screen.findByPlaceholderText('Email'), 'not@exists.com');
+	fireEvent.changeText(await screen.findByPlaceholderText('Password'), 'pw');
 		fireEvent.press(screen.getByText(/Sign In/i));
 		// An alert would show; here we at least ensure button toggles label back
 		await waitFor(() => expect(screen.getByText(/Sign In/i)).toBeTruthy());

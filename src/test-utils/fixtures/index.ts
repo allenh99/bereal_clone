@@ -18,9 +18,9 @@ export async function installEmptyState() {
 export async function installLoadingState({ delayMs = 500 }: { delayMs?: number } = {}) {
 	// Simulate loading by delaying reads for BeReal directory
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	const FS = require('../../../__mocks__/expo-file-system');
-	FS.__clearDelays();
-	FS.__setDelay(/fs:\/\/doc\/BeReal\//, delayMs);
+	const FS = require('expo-file-system/legacy');
+	if (typeof FS.__clearDelays === 'function') FS.__clearDelays();
+	if (typeof FS.__setDelay === 'function') FS.__setDelay(/fs:\/\/doc\/BeReal\//, delayMs);
 	await installEmptyState();
 }
 
@@ -33,10 +33,10 @@ export async function installErrorState({
 } = {}) {
 	// Inject read/write failures
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	const FS = require('../../../__mocks__/expo-file-system');
-	FS.__clearFailures();
-	FS.__setReadFailure(readFailPattern);
-	if (writeFailPattern) FS.__setWriteFailure(writeFailPattern);
+	const FS = require('expo-file-system/legacy');
+	if (typeof FS.__clearFailures === 'function') FS.__clearFailures();
+	if (typeof FS.__setReadFailure === 'function') FS.__setReadFailure(readFailPattern);
+	if (writeFailPattern && typeof FS.__setWriteFailure === 'function') FS.__setWriteFailure(writeFailPattern);
 	await installEmptyState();
 }
 

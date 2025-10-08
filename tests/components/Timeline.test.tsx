@@ -10,13 +10,15 @@ describe('TimelineScreen rendering states', () => {
 		jest.clearAllMocks();
 	});
 
-	it('renders empty state message when unauthenticated', async () => {
+it('renders empty state message when unauthenticated', async () => {
+	await fixtures.empty();
+	await waitFor(() => true);
 		await fixtures.empty();
 		render(<TimelineScreen />);
 		await waitFor(() => expect(screen.getByText(/Please log in/i)).toBeTruthy());
 	});
 
-	it('renders loading state with delayed filesystem', async () => {
+it('renders loading state with delayed filesystem', async () => {
 		await fixtures.loading({ delayMs: 300 });
 		render(<TimelineScreen />);
 		// No explicit loading indicator, but ensure no crash and notification scheduled

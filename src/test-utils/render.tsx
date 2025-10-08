@@ -5,7 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../services/context/AuthContext';
 
 export function render(ui: React.ReactElement, options?: Parameters<typeof rtlRender>[1]) {
-	return rtlRender(
+	const result = rtlRender(
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<SafeAreaProvider>
 				<AuthProvider>{ui}</AuthProvider>
@@ -13,6 +13,10 @@ export function render(ui: React.ReactElement, options?: Parameters<typeof rtlRe
 		</GestureHandlerRootView>,
 		options
 	);
+	// Hard-code an initial tick so AuthProvider can settle before tests assert
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	jasmine?.clock?.install?.();
+	return result;
 }
 
 

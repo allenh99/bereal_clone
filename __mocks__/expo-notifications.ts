@@ -1,19 +1,21 @@
 const scheduled: any[] = [];
 
-module.exports = {
+const mock = {
 	AndroidImportance: { DEFAULT: 3 },
-	getPermissionsAsync: async () => ({ granted: true }),
-	requestPermissionsAsync: async () => ({ granted: true }),
-	setNotificationHandler: () => {},
-	setNotificationChannelAsync: async () => {},
-	cancelAllScheduledNotificationsAsync: async () => {
+	getPermissionsAsync: jest.fn(async () => ({ granted: true })),
+	requestPermissionsAsync: jest.fn(async () => ({ granted: true })),
+	setNotificationHandler: jest.fn(() => {}),
+	setNotificationChannelAsync: jest.fn(async () => {}),
+	cancelAllScheduledNotificationsAsync: jest.fn(async () => {
 		scheduled.length = 0;
-	},
-	scheduleNotificationAsync: async (spec: any) => {
+	}),
+	scheduleNotificationAsync: jest.fn(async (spec: any) => {
 		scheduled.push(spec);
 		return 'mock-id';
-	},
+	}),
 	__getScheduled: () => scheduled,
 };
+
+module.exports = mock;
 
 

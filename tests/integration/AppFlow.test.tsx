@@ -6,9 +6,9 @@ import CaptureScreen from '../../app/capture';
 import ProfileScreen from '../../app/profile';
 import { render } from '../../src/test-utils/render';
 import { fixtures } from '../../src/test-utils/fixtures';
-import { __queuePicture, __resetCameraMock } from '../../__mocks__/expo-camera';
+import { __queuePicture, __resetCameraMock } from 'expo-camera';
 import * as Notifications from 'expo-notifications';
-import * as FS from '../../__mocks__/expo-file-system';
+import * as FS from 'expo-file-system/legacy';
 
 describe('End-to-end app flows (integration)', () => {
 	beforeEach(async () => {
@@ -17,13 +17,14 @@ describe('End-to-end app flows (integration)', () => {
 		await fixtures.empty();
 	});
 
-	it('login → notification scheduled → capture → timeline shows reactions count updating', async () => {
+it('login → notification scheduled → capture → timeline shows reactions count updating', async () => {
+	await waitFor(() => true);
 		// 1) Signup to create a user and session
 		render(<ProfileScreen />); // profile redirects if no user; we will sign up via Signup screen
 		// Simulate sign-up by rendering Signup directly
-		render(<LoginScreen />);
-		fireEvent.changeText(screen.getByPlaceholderText('Email'), 'a@x.com');
-		fireEvent.changeText(screen.getByPlaceholderText('Password'), 'pw');
+	render(<LoginScreen />);
+	fireEvent.changeText(await screen.findByPlaceholderText('Email'), 'a@x.com');
+	fireEvent.changeText(await screen.findByPlaceholderText('Password'), 'pw');
 		fireEvent.press(screen.getByText(/Sign In/i));
 		// Login will fail since no users yet; create a user via fixtures instead
 		await fixtures.populated({ users: [{ id: 'u1', email: 'a@x.com', role: 'admin' }], sessionUserId: 'u1' });

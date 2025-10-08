@@ -1,10 +1,11 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { screen, waitFor } from '@testing-library/react-native';
+import { render } from '../../src/test-utils/render';
 import TimelineScreen from '../../app/index';
 import CaptureScreen from '../../app/capture';
 import { fixtures } from '../../src/test-utils/fixtures';
-import * as Camera from '../../__mocks__/expo-camera';
-import * as FS from '../../__mocks__/expo-file-system';
+import * as Camera from 'expo-camera';
+import * as FS from 'expo-file-system/legacy';
 
 describe('Edge cases', () => {
 	it('permission denied for camera shows not allowed message', async () => {

@@ -1,10 +1,9 @@
 import '@testing-library/jest-native/extend-expect';
 import 'react-native-gesture-handler/jestSetup';
 
-jest.mock('expo-file-system/legacy', () => require('./__mocks__/expo-file-system'));
-jest.mock('expo-crypto', () => require('./__mocks__/expo-crypto'));
-jest.mock('expo-notifications', () => require('./__mocks__/expo-notifications'));
-jest.mock('expo-camera', () => require('./__mocks__/expo-camera'));
+// Important: We rely on jest.config.js moduleNameMapper to provide concrete manual mocks
+// for expo-file-system/legacy, expo-crypto, expo-notifications, and expo-camera.
+// Do NOT call jest.mock(...) for those here, or Jest will auto-mock and strip our helpers.
 
 // Router mocks for screens
 jest.mock('expo-router', () => ({
@@ -14,6 +13,22 @@ jest.mock('expo-router', () => ({
 }));
 
 // Reanimated mock if referenced indirectly
-jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+jest.mock('react-native-reanimated', () => {
+	const ReanimatedMock = {
+		__esModule: true,
+		default: {
+			createAnimatedComponent: (c: any) => c,
+		},
+		Easing: {},
+		useSharedValue: (v: any) => ({ value: v }),
+		useAnimatedStyle: () => ({}),
+		withTiming: (toValue: any) => toValue,
+		withSpring: (toValue: any) => toValue,
+		runOnJS: (fn: any) => fn,
+		runOnUI: (fn: any) => fn,
+		createAnimatedComponent: (c: any) => c,
+	};
+	return ReanimatedMock;
+});
 
 

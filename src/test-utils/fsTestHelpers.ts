@@ -1,10 +1,13 @@
 // Utilities to seed/reset the in-memory FS mock.
-// Import the mock directly so we can reset between tests.
+// Obtain the same mocked module instance Jest provides for the app code.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const FS = require('../../__mocks__/expo-file-system');
+const FSModule = require('expo-file-system/legacy');
+const FS = FSModule && (FSModule.default ?? FSModule);
 
 export function resetFs() {
-	FS.__reset();
+	if (typeof FS.__reset === 'function') {
+		FS.__reset();
+	}
 }
 
 export function writeJson(path: string, obj: unknown) {
@@ -25,7 +28,8 @@ export async function seedReactions(reactions: any[]) {
 }
 
 export async function seedPhoto(path: string, base64: string) {
-	await FS.writeAsStringAsync(path, base64, { encoding: FS.EncodingType.Base64 });
+	const encoding = FS.EncodingType?.Base64 ?? 'base64';
+	await FS.writeAsStringAsync(path, base64, { encoding });
 }
 
 
