@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Simple one-shot setup and launcher for the app.
-# Usage: ./run.sh [ios|android|web|start]
+# Simple one-shot setup and launcher for the app and tests.
+# Usage: ./run.sh [ios|android|web|start|test]
 #  - ios:     start dev server and open iOS simulator (if available)
 #  - android: start dev server and open Android emulator (if available)
 #  - web:     start dev server for web (may not support camera fully)
 #  - start:   start dev server only (default)
+#  - test:    install deps and run full automated test suite (non-interactive)
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -29,6 +30,15 @@ else
 fi
 
 PLATFORM="${1:-auto}"
+
+if [ "$PLATFORM" = "test" ]; then
+  echo "==> Running automated test suite..."
+  export CI=true
+  export TZ=UTC
+  npm run test:ci
+  echo "==> Tests completed successfully."
+  exit 0
+fi
 
 echo "==> Starting Expo dev server..."
 case "$PLATFORM" in
